@@ -35,8 +35,8 @@ def serializer(obj): return isinstance(obj, (date, datetime, Decimal)) and str(o
 
 # Kite Connect App settings. Go to https://developers.kite.trade/apps/
 # to create an app if you don't have one.
-kite_api_key = "kite_api_key"
-kite_api_secret = "kite_api_secret"
+kite_api_key = "3np0d05xqq02k905"
+kite_api_secret = "moinrngrkwro397djjqz47f98z6p2db0"
 
 # Create a redirect url
 redirect_url = "http://{host}:{port}/login".format(host=HOST, port=PORT)
@@ -53,7 +53,7 @@ app.secret_key = os.urandom(24)
 
 # Templates
 index_template = """
-    <div>Make sure your app with api_key - <b>{aspi_key}</b> has set redirect to <b>{redirect_url}</b>.</div>
+    <div>Make sure your app with api_key - <b>{api_key}</b> has set redirect to <b>{redirect_url}</b>.</div>
     <div>If not you can set it from your <a href="{console_url}">Kite Connect developer console here</a>.</div>
     <a href="{login_url}"><h1>Login to generate access token.</h1></a>"""
 
@@ -64,7 +64,7 @@ login_template = """
     <pre>{user_data}</pre>
     <a target="_blank" href="/holdings.json"><h4>Fetch user holdings</h4></a>
     <a target="_blank" href="/orders.json"><h4>Fetch user orders</h4></a>
-    <a target="_blank" href="https://kite.trade/docs/connect/v1/"><h4>Checks Kite Connect docs for other calls.</h4></a>"""
+    <a target="_blank" href="https://kite.trade/docs/connect/v3/"><h4>Checks Kite Connect docs for other calls.</h4></a>"""
 
 
 def get_kite_client():

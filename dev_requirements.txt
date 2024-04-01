@@ -1,67 +1,67 @@
-asttokens @ file:///home/conda/feedstock_root/build_artifacts/asttokens_1698341106958/work
+asttokens
 attrs==23.2.0
 autobahn==23.6.2
 Automat==22.10.0
 certifi==2024.2.2
 cffi==1.16.0
 charset-normalizer==3.3.2
-colorama @ file:///home/conda/feedstock_root/build_artifacts/colorama_1666700638685/work
-comm @ file:///home/conda/feedstock_root/build_artifacts/comm_1710320294760/work
+colorama
+comm
 constantly==23.10.4
 coverage==7.4.4
 cryptography==42.0.5
-debugpy @ file:///C:/b/abs_c0y1fjipt2/croot/debugpy_1690906864587/work
-decorator @ file:///home/conda/feedstock_root/build_artifacts/decorator_1641555617451/work
-exceptiongroup @ file:///home/conda/feedstock_root/build_artifacts/exceptiongroup_1704921103267/work
-executing @ file:///home/conda/feedstock_root/build_artifacts/executing_1698579936712/work
+debugpy
+decorator
+exceptiongroup
+executing
 flake8==4.0.1
 hyperlink==21.0.0
 idna==3.6
-importlib_metadata @ file:///home/conda/feedstock_root/build_artifacts/importlib-metadata_1710971335535/work
+importlib_metadata
 incremental==22.10.0
 iniconfig==2.0.0
-ipykernel @ file:///D:/bld/ipykernel_1708996677248/work
-ipython @ file:///D:/bld/ipython_1709559926914/work
-jedi @ file:///home/conda/feedstock_root/build_artifacts/jedi_1696326070614/work
-jupyter_client @ file:///home/conda/feedstock_root/build_artifacts/jupyter_client_1710255804825/work
-jupyter_core @ file:///D:/bld/jupyter_core_1710257313664/work
-matplotlib-inline @ file:///home/conda/feedstock_root/build_artifacts/matplotlib-inline_1660814786464/work
+ipykernel
+ipython
+jedi
+jupyter_client
+jupyter_core
+matplotlib-inline
 mccabe==0.6.1
 mock==5.1.0
-nest_asyncio @ file:///home/conda/feedstock_root/build_artifacts/nest-asyncio_1705850609492/work
-packaging @ file:///home/conda/feedstock_root/build_artifacts/packaging_1710075952259/work
-parso @ file:///home/conda/feedstock_root/build_artifacts/parso_1638334955874/work
-pickleshare @ file:///home/conda/feedstock_root/build_artifacts/pickleshare_1602536217715/work
-platformdirs @ file:///home/conda/feedstock_root/build_artifacts/platformdirs_1706713388748/work
+nest_asyncio
+packaging
+parso
+pickleshare
+platformdirs
 pluggy==1.4.0
-prompt-toolkit @ file:///home/conda/feedstock_root/build_artifacts/prompt-toolkit_1702399386289/work
-psutil @ file:///C:/ci_311_rebuilds/psutil_1679005906571/work
-pure-eval @ file:///home/conda/feedstock_root/build_artifacts/pure_eval_1642875951954/work
+prompt-toolkit
+psutil
+pure-eval
 pyasn1==0.6.0
 pyasn1_modules==0.4.0
 pycodestyle==2.8.0
 pycparser==2.22
 pyflakes==2.4.0
-Pygments @ file:///home/conda/feedstock_root/build_artifacts/pygments_1700607939962/work
+Pygments
 pyOpenSSL==24.1.0
 pytest==8.1.1
 pytest-cov==5.0.0
-python-dateutil @ file:///home/conda/feedstock_root/build_artifacts/python-dateutil_1709299778482/work
-pywin32==305.1
+python-dateutil
+pywin32
 PyYAML==6.0.1
-pyzmq @ file:///C:/b/abs_89aq69t0up/croot/pyzmq_1705605705281/work
+pyzmq
 requests==2.31.0
 responses==0.25.0
 service-identity==24.1.0
-six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
-stack-data @ file:///home/conda/feedstock_root/build_artifacts/stack_data_1669632077133/work
-tornado @ file:///C:/b/abs_0cbrstidzg/croot/tornado_1696937003724/work
-traitlets @ file:///home/conda/feedstock_root/build_artifacts/traitlets_1710254411456/work
+six
+stack-data
+tornado
+traitlets
 Twisted==24.3.0
 twisted-iocpsupport==1.0.4
 txaio==23.1.1
-typing_extensions @ file:///home/conda/feedstock_root/build_artifacts/typing_extensions_1708904622550/work
+typing_extensions
 urllib3==1.26.18
-wcwidth @ file:///home/conda/feedstock_root/build_artifacts/wcwidth_1704731205417/work
-zipp @ file:///home/conda/feedstock_root/build_artifacts/zipp_1695255097490/work
+wcwidth
+zipp
 zope.interface==6.2
