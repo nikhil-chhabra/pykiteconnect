@@ -12,10 +12,17 @@
 ###############################################################################
 
 import logging
-from kiteconnect import KiteTicker
 import pandas as pd
 from datetime import datetime
 from pymongo import MongoClient
+from jugaad_trader import Zerodha
+import pyotp
+import config
+
+username = config.username
+password = config.password
+totp = pyotp.TOTP(config.totp_code)
+
 
 client = MongoClient()
 
@@ -28,15 +35,18 @@ def insert_tick(tick):
 
 logging.basicConfig(level=logging.INFO)
 
-key = "3np0d05xqq02k905"
-token = "ghKPxBi2zR5yYOsfGAVUNhkoAt0ldB30"
+kite = Zerodha(user_id=username, password=password, twofa=totp.now())
+
+kite.login()
+
+kws = kite.ticker()
+
 
 # Initialise.
-kws = KiteTicker(key, token)
 date = datetime.now().strftime("%d_%m_%y")
 df_instruments1 = pd.read_csv(f'weighted_final_shortlist_{date}.csv')
-ce_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] > 0) & (df_instruments1['signal_3_7d'] > 0) & (df_instruments1['signal_3_31d'] > 0)]
-pe_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] < 0) & (df_instruments1['signal_3_7d'] < 0) & (df_instruments1['signal_3_31d'] < 0)]
+ce_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] >= 0) & (df_instruments1['signal_3_7d'] > 0) & (df_instruments1['signal_3_31d'] > 0)]
+pe_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] <= 0) & (df_instruments1['signal_3_7d'] < 0) & (df_instruments1['signal_3_31d'] < 0)]
 
 # RELIANCE BSE
 tokens = ce_shortlist_df['instrument_token'].tolist()
@@ -45,7 +55,7 @@ tokens = ce_shortlist_df['instrument_token'].tolist()
 # Callback for tick reception.
 def on_ticks(ws, ticks):
     if len(ticks) > 0:
-        logging.info("Current mode: {}".format(ticks[0]["mode"]))
+        logging.info("Tick: {}".format(ticks[0]['exchange_timestamp']))
         for tick in ticks:
             insert_tick(tick)
 
@@ -88,7 +98,7 @@ kws.on_noreconnect = on_noreconnect
 
 # Infinite loop on the main thread.
 # You have to use the pre-defined callbacks to manage subscriptions.
-kws.connect(threaded=True)
+kws.connect()
 
 # # Block main thread
 # logging.info("This is main thread. Will change webosocket mode every 5 seconds.")
