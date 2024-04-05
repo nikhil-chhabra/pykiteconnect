@@ -13,11 +13,22 @@
 
 import logging
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, time
 from pymongo import MongoClient
 from jugaad_trader import Zerodha
 import pyotp
 import config
+
+
+def market_hours():
+    # Get current time
+    current_time = datetime.now().time()
+    # Define start and end times
+    start_time = time(9, 0)  # 9:00 AM
+    end_time = time(16, 0)   # 4:00 PM
+    # Check if current time is between start and end times
+    return start_time <= current_time <= end_time
+
 
 username = config.username
 password = config.password
@@ -44,7 +55,7 @@ kws = kite.ticker()
 
 # Initialise.
 date = datetime.now().strftime("%d_%m_%y")
-df_instruments1 = pd.read_csv(f'weighted_final_shortlist_{date}.csv')
+df_instruments1 = pd.read_csv(f'files\weighted_final_shortlist_{date}.csv')
 ce_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] >= 0) & (df_instruments1['signal_3_7d'] > 0) & (df_instruments1['signal_3_31d'] > 0)]
 pe_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] <= 0) & (df_instruments1['signal_3_7d'] < 0) & (df_instruments1['signal_3_31d'] < 0)]
 
@@ -54,10 +65,11 @@ tokens = ce_shortlist_df['instrument_token'].tolist()
 
 # Callback for tick reception.
 def on_ticks(ws, ticks):
-    if len(ticks) > 0:
-        logging.info("Tick: {}".format(ticks[0]['exchange_timestamp']))
-        for tick in ticks:
-            insert_tick(tick)
+    if market_hours():
+        if len(ticks) > 0:
+            logging.info("Tick: {}".format(ticks[0]['exchange_timestamp']))
+            for tick in ticks:
+                insert_tick(tick)
 
 
 # Callback for successful connection.
