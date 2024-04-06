@@ -44,7 +44,9 @@ def insert_tick(tick):
     collection.insert_one(tick)
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename = 'log.txt', level=logging.INFO)
+
+
 
 kite = Zerodha(user_id=username, password=password, twofa=totp.now())
 
@@ -52,79 +54,73 @@ kite.login()
 
 kws = kite.ticker()
 
+try:
+    # Initialise.
+    date = datetime.now().strftime("%d_%m_%y")
+    df_instruments1 = pd.read_csv(f'files\weighted_final_shortlist_{date}.csv')
+    ce_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] >= 0) & (df_instruments1['signal_3_7d'] > 0) & (df_instruments1['signal_3_31d'] > 0)]
+    pe_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] <= 0) & (df_instruments1['signal_3_7d'] < 0) & (df_instruments1['signal_3_31d'] < 0)]
 
-# Initialise.
-date = datetime.now().strftime("%d_%m_%y")
-df_instruments1 = pd.read_csv(f'files\weighted_final_shortlist_{date}.csv')
-ce_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] >= 0) & (df_instruments1['signal_3_7d'] > 0) & (df_instruments1['signal_3_31d'] > 0)]
-pe_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] <= 0) & (df_instruments1['signal_3_7d'] < 0) & (df_instruments1['signal_3_31d'] < 0)]
-
-# RELIANCE BSE
-tokens = ce_shortlist_df['instrument_token'].tolist()
-
-
-# Callback for tick reception.
-def on_ticks(ws, ticks):
-    if market_hours():
-        if len(ticks) > 0:
-            logging.info("Tick: {}".format(ticks[0]['exchange_timestamp']))
-            for tick in ticks:
-                insert_tick(tick)
+    # RELIANCE BSE
+    tokens = ce_shortlist_df['instrument_token'].tolist()
 
 
-# Callback for successful connection.
-def on_connect(ws, response):
-    logging.info("Successfully connected. Response: {}".format(response))
-    ws.subscribe(tokens)
-    ws.set_mode(ws.MODE_FULL, tokens)
-    logging.info("Subscribe to tokens in Full mode: {}".format(tokens))
+    # Callback for tick reception.
+    def on_ticks(ws, ticks):
+        dt=datetime.now()
+        if market_hours():
+            if len(ticks) > 0:
+                ts=ticks[0]['exchange_timestamp']
+                logging.info(f"[{dt}] - Tick: {ts}")
+                for tick in ticks:
+                    insert_tick(tick)
 
 
-# Callback when current connection is closed.
-def on_close(ws, code, reason):
-    logging.info("Connection closed: {code} - {reason}".format(code=code, reason=reason))
+    # Callback for successful connection.
+    def on_connect(ws, response):
+        dt=datetime.now()
+        logging.info(f"[{dt}] - Successfully connected. Response: {response}")
+        ws.subscribe(tokens)
+        ws.set_mode(ws.MODE_FULL, tokens)
+        logging.info(f"[{dt}] - Subscribe to tokens in Full mode: {tokens}")
 
 
-# Callback when connection closed with error.
-def on_error(ws, code, reason):
-    logging.info("Connection error: {code} - {reason}".format(code=code, reason=reason))
+    # Callback when current connection is closed.
+    def on_close(ws, code, reason):
+        dt=datetime.now()
+        logging.info(f"[{dt}] - Connection closed: {code} - {reason}")
 
 
-# Callback when reconnect is on progress
-def on_reconnect(ws, attempts_count):
-    logging.info("Reconnecting: {}".format(attempts_count))
+    # Callback when connection closed with error.
+    def on_error(ws, code, reason):
+        dt=datetime.now()
+        logging.info(f"[{dt}] - Connection error: {code} - {reason}")
 
 
-# Callback when all reconnect failed (exhausted max retries)
-def on_noreconnect(ws):
-    logging.info("Reconnect failed.")
+    # Callback when reconnect is on progress
+    def on_reconnect(ws, attempts_count):
+        dt=datetime.now()
+        logging.info(f"[{dt}] - Reconnecting: {attempts_count}")
 
 
-# Assign the callbacks.
-kws.on_ticks = on_ticks
-kws.on_close = on_close
-kws.on_error = on_error
-kws.on_connect = on_connect
-kws.on_reconnect = on_reconnect
-kws.on_noreconnect = on_noreconnect
+    # Callback when all reconnect failed (exhausted max retries)
+    def on_noreconnect(ws):
+        dt=datetime.now()
+        logging.info(f"[{dt}] - Reconnect failed.")
 
-# Infinite loop on the main thread.
-# You have to use the pre-defined callbacks to manage subscriptions.
-kws.connect()
 
-# # Block main thread
-# logging.info("This is main thread. Will change webosocket mode every 5 seconds.")
+    # Assign the callbacks.
+    kws.on_ticks = on_ticks
+    kws.on_close = on_close
+    kws.on_error = on_error
+    kws.on_connect = on_connect
+    kws.on_reconnect = on_reconnect
+    kws.on_noreconnect = on_noreconnect
 
-# count = 0
-# while True:
-#     count += 1
-#     if count % 2 == 0:
-#         if kws.is_connected():
-#             logging.info("### Set mode to LTP for all tokens")
-#             kws.set_mode(kws.MODE_LTP, tokens)
-#     else:
-#         if kws.is_connected():
-#             logging.info("### Set mode to quote for all tokens")
-#             kws.set_mode(kws.MODE_QUOTE, tokens)
+    # Infinite loop on the main thread.
+    # You have to use the pre-defined callbacks to manage subscriptions.
+    kws.connect()
 
-#     time.sleep(5)
+except Exception as e:
+    dt=datetime.now()
+    logging.info(f"[{dt}] - Error : {e}")
