@@ -31,7 +31,7 @@ def sl_multiplier_strategy(instrument_token,multiplier):
     target_price=order_price+((order_price-stop_loss)*multiplier)
     order = {'instrument_code':instrument_token,
             'order_price':order_price,
-            'order_type':order_type,
+            'order_type':order_type,    
             'stop_loss':stop_loss,
             'target_price':target_price}
     return order

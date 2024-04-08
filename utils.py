@@ -7,6 +7,7 @@ import config
 from jugaad_trader import Zerodha
 import pyotp
 from pymongo import MongoClient
+from tqdm import tqdm
 
 def login_kite():
     username = config.username
@@ -90,12 +91,22 @@ def get_candle_signal_2(instrument_code, sample_size):
         return 0
 
 
-def get_candle_signal_3(instrument_code, sample_size, interval):
+def get_candle_signal_3(instrument_code, sample_size, interval,today=1):
     try:
         df_summary = pd.DataFrame()
         for i in range(sample_size + 1):
-            start = ((datetime.now() + timedelta(days=-i)).strftime("%Y-%m-%d")) + " 09:00:00"
-            end = ((datetime.now() + timedelta(days=-i)).strftime("%Y-%m-%d")) + " 16:00:00"
+            target_date=(datetime.now() + timedelta(days=-i-today))
+            if target_date.weekday() == 5:
+                start = ((target_date + timedelta(days=-1)).strftime("%Y-%m-%d")) + " 09:00:00"
+                end = ((target_date + timedelta(days=-1)).strftime("%Y-%m-%d")) + " 16:00:00"
+            elif target_date.weekday() == 6:
+                start = ((target_date + timedelta(days=-2)).strftime("%Y-%m-%d")) + " 09:00:00"
+                end = ((target_date + timedelta(days=-2)).strftime("%Y-%m-%d")) + " 16:00:00"
+            else:
+                start = ((datetime.now() + timedelta(days=-i)).strftime("%Y-%m-%d")) + " 09:00:00"
+                end = ((datetime.now() + timedelta(days=-i)).strftime("%Y-%m-%d")) + " 16:00:00"
+                
+            
             df_historical = get_candle(instrument_code, start, end, interval)
 
             if len(df_historical) > 0:
@@ -120,10 +131,11 @@ def shortlist_scrips(interval):
     date = datetime.now().strftime("%d_%m_%y")
     filename = f'files\weighted_final_shortlist_{date}.csv'
     if filename not in os.listdir():
-        df_instruments1 = pd.read_excel('final_instruments.xlsx')
-        df_instruments1['signal_3_1d'] = df_instruments1['instrument_token'].apply(lambda x: get_candle_signal_3(x, 1, interval))
-        df_instruments1['signal_3_7d'] = df_instruments1['instrument_token'].apply(lambda x: get_candle_signal_3(x, 7, interval))
-        df_instruments1['signal_3_31d'] = df_instruments1['instrument_token'].apply(lambda x: get_candle_signal_3(x, 31, interval))
+        df_instruments1 = pd.read_excel('files//final_instruments.xlsx')
+        for i in tqdm(range(len(df_instruments1))):
+            df_instruments1.loc[i,'signal_3_1d'] = get_candle_signal_3(df_instruments1.loc[i,'instrument_token'], 3, interval)
+            df_instruments1.loc[i,'signal_3_7d'] = get_candle_signal_3(df_instruments1.loc[i,'instrument_token'], 7, interval)
+            df_instruments1.loc[i,'signal_3_31d'] = get_candle_signal_3(df_instruments1.loc[i,'instrument_token'], 31, interval)
         df_instruments1 = df_instruments1.sort_values(by="signal_3_31d", ascending=False).reset_index(drop=True)
         df_instruments1.to_csv(filename, index=False)
     df_instruments1 = pd.read_csv(filename)

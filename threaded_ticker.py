@@ -62,7 +62,7 @@ try:
     pe_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] <= 0) & (df_instruments1['signal_3_7d'] < 0) & (df_instruments1['signal_3_31d'] < 0)]
 
     # RELIANCE BSE
-    tokens = ce_shortlist_df['instrument_token'].tolist()
+    tokens = ce_shortlist_df['instrument_token'].tolist()+pe_shortlist_df['instrument_token'].tolist()
 
 
     # Callback for tick reception.
