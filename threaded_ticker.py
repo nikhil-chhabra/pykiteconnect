@@ -58,8 +58,8 @@ try:
     # Initialise.
     date = datetime.now().strftime("%d_%m_%y")
     df_instruments1 = pd.read_csv(f'files\weighted_final_shortlist_{date}.csv')
-    ce_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] >= 0) & (df_instruments1['signal_3_7d'] > 0) & (df_instruments1['signal_3_31d'] > 0)]
-    pe_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] <= 0) & (df_instruments1['signal_3_7d'] < 0) & (df_instruments1['signal_3_31d'] < 0)]
+    ce_shortlist_df = df_instruments1[(df_instruments1['signal_1d'] >= 0) & (df_instruments1['signal_7d'] > 0) & (df_instruments1['signal_31d'] > 0)]
+    pe_shortlist_df = df_instruments1[(df_instruments1['signal_1d'] <= 0) & (df_instruments1['signal_7d'] < 0) & (df_instruments1['signal_31d'] < 0)]
 
     # RELIANCE BSE
     tokens = ce_shortlist_df['instrument_token'].tolist()+pe_shortlist_df['instrument_token'].tolist()

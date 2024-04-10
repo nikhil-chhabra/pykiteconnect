@@ -1,3 +1,4 @@
+import concurrent.futures
 from datetime import datetime, timedelta
 import pandas as pd
 import plotly.graph_objects as go
@@ -19,7 +20,7 @@ def login_kite():
 
 
 def get_candle_fig(instrument_code, start, end, interval):
-    kite=login_kite()
+    kite = login_kite()
     df_historical = pd.DataFrame(kite.historical_data(instrument_code, start, end, interval))
     if len(df_historical) > 0:
         fig = go.Figure(data=[go.Candlestick(x=df_historical['date'],
@@ -33,98 +34,47 @@ def get_candle_fig(instrument_code, start, end, interval):
 
 
 def get_candle(instrument_code, start, end, interval):
-    kite=login_kite()
+    kite = login_kite()
     df_historical = pd.DataFrame(kite.historical_data(instrument_code, start, end, interval))
     if len(df_historical) > 0:
         return (df_historical)
     else:
         return (pd.DataFrame())
 
+def last_n_weekdays(n):
+    # Initialize an empty list to store the result
+    result = []
+    
+    # Get today's date
+    current_date = datetime.now()
+    
+    # Iterate until we collect n weekdays
+    while len(result) < n:
+        # Subtract one day from the current date
+        current_date -= timedelta(days=1)
+        
+        # Check if the current day is a Saturday or Sunday
+        if current_date.weekday() in [5, 6]:  # Saturday is 5, Sunday is 6
+            continue  # Skip if it's a weekend
+        
+        # Add the current date to the result
+        result.append(current_date.strftime('%Y-%m-%d'))
+    
+    # Return the result in reverse order (last to first)
+    return result[::-1]
 
-def get_candle_signal(instrument_code, sample_size):
-    try:
-        df_summary = pd.DataFrame()
-        for i in range(sample_size + 1):
-            start = ((datetime.now() + timedelta(days=-i)).strftime("%Y-%m-%d")) + " 09:00:00"
-            end = ((datetime.now() + timedelta(days=-i)).strftime("%Y-%m-%d")) + " 16:00:00"
-            interval = "5minute"
-            df_historical = get_candle(instrument_code, start, end, interval)
+def get_candle_signal(instrument_code, sample_size, interval, today=1):
+    start = min(last_n_weekdays(sample_size)) + " 09:00:00"
+    end = max(last_n_weekdays(sample_size)) + " 16:00:00"
+    df_historical = get_candle(instrument_code, start, end, interval)
+    if len(df_historical) > 0:
+        df_historical['change'] = (df_historical['close'] - df_historical['open'])
+        df_historical['candle_type'] = df_historical['change'].apply(lambda x: 1 if x > 0 else -1)
+        df_historical['candle_weight'] = df_historical['change'].abs() / df_historical['change'].abs().max()
+        df_historical['candle_strength'] = df_historical['candle_type'] * df_historical['candle_weight']
+        candle_ratio = sum(df_historical['candle_strength'])
+    return (candle_ratio / sample_size)
 
-            if len(df_historical) > 0:
-                df_historical['change'] = df_historical['close'] - df_historical['open']
-                df_historical['candle_type'] = df_historical['change'].apply(lambda x: 'green' if x > 0 else 'red')
-                try:
-                    candle_ratio = ((df_historical['candle_type'].value_counts()['green']) / (df_historical['candle_type'].count()))
-                except:
-                    candle_ratio = 0
-                df_summary_dict = {'day': end,
-                                   'candle_ratio': candle_ratio}
-                df_temp = pd.DataFrame([df_summary_dict])
-                df_summary = pd.concat([df_summary, df_temp])
-        return ((sum(df_summary['candle_ratio']) * 2) / sample_size)
-    except:
-        return 0
-
-
-def get_candle_signal_2(instrument_code, sample_size):
-    try:
-        df_summary = pd.DataFrame()
-        for i in range(sample_size + 1):
-            start = ((datetime.now() + timedelta(days=-i)).strftime("%Y-%m-%d")) + " 09:00:00"
-            end = ((datetime.now() + timedelta(days=-i)).strftime("%Y-%m-%d")) + " 16:00:00"
-            interval = "5minute"
-            df_historical = get_candle(instrument_code, start, end, interval)
-
-            if len(df_historical) > 0:
-                df_historical['change'] = df_historical['close'] - df_historical['open']
-                df_historical['candle_type'] = df_historical['change'].apply(lambda x: 'green' if x > 0 else 'red')
-                try:
-                    candle_ratio = ((df_historical['candle_type'].value_counts()['green']) / (df_historical['candle_type'].count()))
-                except:
-                    candle_ratio = 0
-                df_summary_dict = {'day': end,
-                                   'candle_ratio': candle_ratio}
-                df_temp = pd.DataFrame([df_summary_dict])
-                df_summary = pd.concat([df_summary, df_temp])
-        return (len(df_summary[df_summary['candle_ratio'] > 0.5]) / len(df_summary))
-    except:
-        return 0
-
-
-def get_candle_signal_3(instrument_code, sample_size, interval,today=1):
-    try:
-        df_summary = pd.DataFrame()
-        for i in range(sample_size + 1):
-            target_date=(datetime.now() + timedelta(days=-i-today))
-            if target_date.weekday() == 5:
-                start = ((target_date + timedelta(days=-1)).strftime("%Y-%m-%d")) + " 09:00:00"
-                end = ((target_date + timedelta(days=-1)).strftime("%Y-%m-%d")) + " 16:00:00"
-            elif target_date.weekday() == 6:
-                start = ((target_date + timedelta(days=-2)).strftime("%Y-%m-%d")) + " 09:00:00"
-                end = ((target_date + timedelta(days=-2)).strftime("%Y-%m-%d")) + " 16:00:00"
-            else:
-                start = ((datetime.now() + timedelta(days=-i)).strftime("%Y-%m-%d")) + " 09:00:00"
-                end = ((datetime.now() + timedelta(days=-i)).strftime("%Y-%m-%d")) + " 16:00:00"
-                
-            
-            df_historical = get_candle(instrument_code, start, end, interval)
-
-            if len(df_historical) > 0:
-                df_historical['change'] = df_historical['close'] - df_historical['open']
-                df_historical['candle_type'] = df_historical['change'].apply(lambda x: 1 if x > 0 else -1)
-                df_historical['candle_weight'] = df_historical['change'].abs() / df_historical['change'].abs().max()
-                df_historical['candle_strength'] = df_historical['candle_type'] * df_historical['candle_weight']
-                try:
-                    candle_ratio = sum(df_historical['candle_strength'])
-                except:
-                    candle_ratio = 0
-                df_summary_dict = {'day': end,
-                                   'candle_ratio': candle_ratio}
-                df_temp = pd.DataFrame([df_summary_dict])
-                df_summary = pd.concat([df_summary, df_temp])
-        return ((sum(df_summary['candle_ratio'])) / sample_size)
-    except:
-        return 0
 
 
 def shortlist_scrips(interval):
@@ -133,14 +83,14 @@ def shortlist_scrips(interval):
     if filename not in os.listdir():
         df_instruments1 = pd.read_excel('files//final_instruments.xlsx')
         for i in tqdm(range(len(df_instruments1))):
-            df_instruments1.loc[i,'signal_3_1d'] = get_candle_signal_3(df_instruments1.loc[i,'instrument_token'], 3, interval)
-            df_instruments1.loc[i,'signal_3_7d'] = get_candle_signal_3(df_instruments1.loc[i,'instrument_token'], 7, interval)
-            df_instruments1.loc[i,'signal_3_31d'] = get_candle_signal_3(df_instruments1.loc[i,'instrument_token'], 31, interval)
-        df_instruments1 = df_instruments1.sort_values(by="signal_3_31d", ascending=False).reset_index(drop=True)
+            df_instruments1.loc[i,'signal_1d']=get_candle_signal(df_instruments1.loc[i,'instrument_token'],1,interval)
+            df_instruments1.loc[i,'signal_7d']=get_candle_signal(df_instruments1.loc[i,'instrument_token'],7,interval)
+            df_instruments1.loc[i,'signal_31d']=get_candle_signal(df_instruments1.loc[i,'instrument_token'],31,interval)
+        df_instruments1 = df_instruments1.sort_values(by="signal_31d", ascending=False).reset_index(drop=True)
         df_instruments1.to_csv(filename, index=False)
     df_instruments1 = pd.read_csv(filename)
-    buy_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] >= 0) & (df_instruments1['signal_3_7d'] > 0) & (df_instruments1['signal_3_31d'] > 0)]
-    sell_shortlist_df = df_instruments1[(df_instruments1['signal_3_1d'] <= 0) & (df_instruments1['signal_3_7d'] < 0) & (df_instruments1['signal_3_31d'] < 0)]
+    buy_shortlist_df = df_instruments1[(df_instruments1['signal_1d'] >= 0) & (df_instruments1['signal_7d'] > 0) & (df_instruments1['signal_31d'] > 0)]
+    sell_shortlist_df = df_instruments1[(df_instruments1['signal_1d'] <= 0) & (df_instruments1['signal_7d'] < 0) & (df_instruments1['signal_31d'] < 0)]
     return (buy_shortlist_df, sell_shortlist_df)
 
 
@@ -150,3 +100,6 @@ def get_latest_tick(instrument_token):
         collection = db['tick_data']
         record = collection.find({'instrument_token': instrument_token}).sort({'exchange_timestamp': -1}).limit(1)
         return record
+
+
+
