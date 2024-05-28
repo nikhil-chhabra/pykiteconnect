@@ -19,6 +19,9 @@ from jugaad_trader import Zerodha
 import pyotp
 import config
 import utils
+from datetime import datetime
+
+date = datetime.now().strftime("%d_%m_%y")
 
 def market_hours():
     # Get current time
@@ -29,18 +32,8 @@ def market_hours():
     # Check if current time is between start and end times
     return start_time <= current_time <= end_time
 
-
-username = config.username
-password = config.password
-totp = pyotp.TOTP(config.totp_code)
-
-
-logging.basicConfig(filename = 'log.txt', level=logging.INFO)
-
-kite = Zerodha(user_id=username, password=password, twofa=totp.now())
-
-kite.login()
-
+logging.basicConfig(filename = rf'C:\Users\nikhi\OneDrive\Documents\kite_logs\log_{date}.txt', level=logging.INFO)
+kite = utils.login_kite()
 kws = kite.ticker()
 
 try:
