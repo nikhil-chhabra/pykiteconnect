@@ -37,7 +37,7 @@ kite = utils.login_kite()
 kws = kite.ticker()
 
 try:
-    scrips = utils.shortlist_scrips('5minute')
+    scrips = utils.shortlist_scrips('5minute', kite=kite)
     tokens = [i['instrument_token'] for i in scrips]
     symbols = [i['tradingsymbol'] for i in scrips]
     token_count=len(tokens)

@@ -51,8 +51,7 @@ def get_candle_fig(instrument_code, start, end, interval):
         return (None)
 
 
-def get_candle(instrument_code, start, end, interval):
-    kite = login_kite()
+def get_candle(instrument_code, start, end, interval,kite):
     df_historical = pd.DataFrame(kite.historical_data(instrument_code, start, end, interval))
     if len(df_historical) > 0:
         return (df_historical)
@@ -81,10 +80,10 @@ def last_n_weekdays(n):
     # Return the result in reverse order (last to first)
     return result[::-1]
 
-def get_candle_signal(instrument_code, sample_size, interval, today=1):
+def get_candle_signal(instrument_code, sample_size, interval,  kite ,today=1,):
     start = min(last_n_weekdays(sample_size)) + " 09:00:00"
     end = max(last_n_weekdays(sample_size)) + " 16:00:00"
-    df_historical = get_candle(instrument_code, start, end, interval)
+    df_historical = get_candle(instrument_code, start, end, interval, kite=kite)
     if len(df_historical) > 0:
         df_historical['change'] = (df_historical['close'] - df_historical['open'])
         df_historical['candle_type'] = df_historical['change'].apply(lambda x: 1 if x > 0 else -1)
@@ -106,15 +105,15 @@ def sleep_computer():
     time.sleep(5)
     os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
 
-def shortlist_scrips(interval):
+def shortlist_scrips(interval,kite):
     date = datetime.now().strftime("%d_%m_%y")
     filename = f'files//weighted_final_shortlist_{date}.csv'
     if os.path.basename(filename) not in os.listdir('files'):
         df_instruments1 = pd.read_excel('files//final_instruments.xlsx')
         for i in tqdm(range(len(df_instruments1))):
-            df_instruments1.loc[i,'signal_1d']=get_candle_signal(df_instruments1.loc[i,'instrument_token'],1,interval)
-            df_instruments1.loc[i,'signal_7d']=get_candle_signal(df_instruments1.loc[i,'instrument_token'],7,interval)
-            df_instruments1.loc[i,'signal_31d']=get_candle_signal(df_instruments1.loc[i,'instrument_token'],31,interval)
+            df_instruments1.loc[i,'signal_1d']=get_candle_signal(df_instruments1.loc[i,'instrument_token'],1,interval,kite=kite)
+            df_instruments1.loc[i,'signal_7d']=get_candle_signal(df_instruments1.loc[i,'instrument_token'],7,interval,kite=kite)
+            df_instruments1.loc[i,'signal_31d']=get_candle_signal(df_instruments1.loc[i,'instrument_token'],31,interval,kite=kite)
         df_instruments1 = df_instruments1.sort_values(by="signal_31d", ascending=False).reset_index(drop=True)
         df_instruments1.to_csv(filename, index=False)
     df_instruments1 = pd.read_csv(filename)
