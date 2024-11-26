@@ -126,4 +126,4 @@ def orders():
 
 if __name__ == "__main__":
     logging.info("Starting server: http://{host}:{port}".format(host=HOST, port=PORT))
-    app.run(host=HOST, port=PORT, debug=True)
+    app.run(host="0.0.0.0", port=PORT, debug=True)

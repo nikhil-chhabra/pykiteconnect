@@ -32,7 +32,7 @@ def market_hours():
     # Check if current time is between start and end times
     return start_time <= current_time <= end_time
 
-logging.basicConfig(filename = rf'C:\Users\nikhi\OneDrive\Documents\kite_logs\log_{date}.txt', level=logging.INFO)
+logging.basicConfig(filename = f'kite_logs/log_{date}.txt', level=logging.INFO)
 kite = utils.login_kite()
 kws = kite.ticker()
 

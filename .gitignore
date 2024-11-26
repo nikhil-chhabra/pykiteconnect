@@ -69,6 +69,7 @@ build/
 develop-eggs/
 dist/
 downloads/
+kite_logs/
 eggs/
 .eggs/
 lib/
